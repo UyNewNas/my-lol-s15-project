@@ -1,0 +1,2892 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>英雄联盟全球总决赛S15赛程系统</title>
+  <!-- Tailwind CSS v3 -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <!-- Font Awesome -->
+  <link href="https://cdn.jsdelivr.net/npm/font-awesome@4.7.0/css/font-awesome.min.css" rel="stylesheet">
+  <!-- Chart.js -->
+  <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.8/dist/chart.umd.min.js"></script>
+  <!-- 统一的 Tailwind 配置 -->
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            primary: '#7928ca',
+            secondary: '#ff0080',
+            accent: '#ffdd00',
+            dark: '#121212',
+            'dark-light': '#1e1e1e',
+            'light-text': '#e0e0e0',
+            'lpl-red': '#e84142',
+            'lck-blue': '#0083c7',
+            'lec-green': '#2ecc71',
+            'lcs-yellow': '#f39c12'
+          },
+          fontFamily: {
+            sans: ['Inter', 'system-ui', 'sans-serif'],
+          },
+          animation: {
+            'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
+            'glow': 'glow 2s ease-in-out infinite alternate',
+          },
+          keyframes: {
+            glow: {
+              '0%': { boxShadow: '0 0 5px rgba(121, 40, 202, 0.5)' },
+              '100%': { boxShadow: '0 0 20px rgba(121, 40, 202, 0.8), 0 0 30px rgba(121, 40, 202, 0.6)' }
+            }
+          }
+        }
+      }
+    }
+  </script>
+  <style type="text/tailwindcss">
+    @layer utilities {
+      .text-shadow {
+        text-shadow: 0 2px 4px rgba(0, 0, 0, 0.5);
+      }
+      .text-shadow-glow {
+        text-shadow: 0 0 10px rgba(121, 40, 202, 0.8);
+      }
+      .bg-gradient-primary {
+        background: linear-gradient(135deg, #7928ca 0%, #ff0080 100%);
+      }
+      .bg-glass {
+        background: rgba(30, 30, 30, 0.7);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+      }
+      .border-glow {
+        box-shadow: 0 0 5px rgba(121, 40, 202, 0.5);
+      }
+      .scrollbar-hide::-webkit-scrollbar {
+        display: none;
+      }
+      .scrollbar-hide {
+        -ms-overflow-style: none;
+        scrollbar-width: none;
+      }
+    }
+  </style>
+</head>
+<body class="bg-dark text-light-text min-h-screen">
+  <!-- 背景图 -->
+  <div class="fixed inset-0 z-0 opacity-20">
+    <img src="https://p9-flow-imagex-sign.byteimg.com/tos-cn-i-a9rns2rl98/rc/pc/super_tool/263bc9abed34427baf707fb1285d82b7~tplv-a9rns2rl98-image.image?rcl=20251025200532241100C4AEDCA701FDDE&rk3s=8e244e95&rrcfp=f06b921b&x-expires=1763985963&x-signature=MkRuxb86vEAoncClD59mS6B%2BUbI%3D" 
+         alt="英雄联盟背景" 
+         class="w-full h-full object-cover">
+  </div>
+
+  <!-- 顶部导航栏 -->
+  <header class="bg-glass sticky top-0 z-50 border-b border-primary/30">
+    <div class="container mx-auto px-4 py-3">
+      <div class="flex items-center justify-between">
+        <!-- Logo -->
+        <div class="flex items-center space-x-3">
+          <img src="https://p3-doubao-search-sign.byteimg.com/labis/1b095cf58de905fe8cea46c0b462b975~tplv-be4g95zd3a-image.jpeg?rk3s=542c0f93&x-expires=1776945942&x-signature=nF4%2BwIJ2t0TRg5pLTOTkdJCmaxc%3D" 
+               alt="英雄联盟全球总决赛" 
+               class="h-12 w-12 object-cover rounded-full border-2 border-primary">
+          <div>
+            <h1 class="text-xl font-bold text-white text-shadow-glow">英雄联盟全球总决赛</h1>
+            <p class="text-xs text-gray-400">S15 / S16 赛程系统</p>
+          </div>
+        </div>
+
+        <!-- 导航菜单 -->
+        <nav class="hidden md:flex items-center space-x-1">
+          <button id="nav-playins" class="nav-btn px-4 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/80 transition-all">
+            入围赛
+          </button>
+          <button id="nav-swiss" class="nav-btn px-4 py-2 rounded-md text-white font-medium hover:bg-primary/50 transition-all">
+            瑞士轮
+          </button>
+          <button id="nav-knockout" class="nav-btn px-4 py-2 rounded-md text-white font-medium hover:bg-primary/50 transition-all">
+            淘汰赛
+          </button>
+          <button id="nav-teams" class="nav-btn px-4 py-2 rounded-md text-white font-medium hover:bg-primary/50 transition-all">
+            队伍管理
+          </button>
+        </nav>
+
+        <!-- 移动端菜单按钮 -->
+        <button id="mobile-menu-btn" class="md:hidden text-white text-2xl">
+          <i class="fa fa-bars"></i>
+        </button>
+      </div>
+
+      <!-- 移动端导航菜单 -->
+      <div id="mobile-menu" class="md:hidden hidden mt-3 pb-3">
+        <div class="flex flex-col space-y-2">
+          <button id="mobile-nav-playins" class="nav-btn px-4 py-2 rounded-md bg-primary text-white font-medium hover:bg-primary/80 transition-all">
+            入围赛
+          </button>
+          <button id="mobile-nav-swiss" class="nav-btn px-4 py-2 rounded-md text-white font-medium hover:bg-primary/50 transition-all">
+            瑞士轮
+          </button>
+          <button id="mobile-nav-knockout" class="nav-btn px-4 py-2 rounded-md text-white font-medium hover:bg-primary/50 transition-all">
+            淘汰赛
+          </button>
+          <button id="mobile-nav-teams" class="nav-btn px-4 py-2 rounded-md text-white font-medium hover:bg-primary/50 transition-all">
+            队伍管理
+          </button>
+        </div>
+      </div>
+    </div>
+  </header>
+
+  <!-- 主内容区域 -->
+  <main class="container mx-auto px-4 py-8 relative z-10">
+    <!-- 页面标题 -->
+    <div class="text-center mb-8">
+      <h2 id="page-title" class="text-3xl md:text-4xl font-bold text-white text-shadow-glow mb-2">英雄联盟全球总决赛 S15</h2>
+      <p id="page-subtitle" class="text-gray-400">入围赛赛程</p>
+    </div>
+
+    <!-- 页面内容区域 -->
+    <div id="page-content">
+      <!-- 入围赛页面 -->
+      <section id="playins-page" class="page-section">
+        <!-- 赛程控制 -->
+        <div class="bg-glass rounded-lg p-4 mb-6 border border-primary/30">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+              <h3 class="text-xl font-semibold">赛程控制</h3>
+              <div class="flex items-center space-x-2">
+                <button id="prev-stage" class="p-2 rounded-full bg-dark-light hover:bg-primary/30 transition-all">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <span id="current-stage" class="px-3 py-1 bg-primary/20 rounded-full">入围赛 - 第一轮</span>
+                <button id="next-stage" class="p-2 rounded-full bg-dark-light hover:bg-primary/30 transition-all">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex space-x-3">
+              <button id="add-match-playins" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded-md transition-all flex items-center">
+                <i class="fa fa-plus mr-2"></i> 添加比赛
+              </button>
+              <select id="tournament-select" class="px-3 py-2 bg-dark-light border border-gray-700 rounded-md">
+                <option value="s15">S15 全球总决赛</option>
+                <option value="s16">S16 全球总决赛</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 赛程表格 -->
+        <div class="bg-glass rounded-lg p-4 border border-primary/30 overflow-x-auto">
+          <table class="w-full min-w-[600px]">
+            <thead>
+              <tr class="border-b border-gray-700">
+                <th class="py-3 px-4 text-left">日期</th>
+                <th class="py-3 px-4 text-left">时间</th>
+                <th class="py-3 px-4 text-center">对阵</th>
+                <th class="py-3 px-4 text-center">结果</th>
+                <th class="py-3 px-4 text-center">状态</th>
+                <th class="py-3 px-4 text-right">操作</th>
+              </tr>
+            </thead>
+            <tbody id="playins-matches">
+              <!-- 比赛数据将通过JavaScript动态填充 -->
+            </tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- 瑞士轮页面 -->
+      <section id="swiss-page" class="page-section hidden">
+        <!-- 赛程控制 -->
+        <div class="bg-glass rounded-lg p-4 mb-6 border border-primary/30">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <div class="flex items-center space-x-4 mb-4 md:mb-0">
+              <h3 class="text-xl font-semibold">赛程控制</h3>
+              <div class="flex items-center space-x-2">
+                <button id="prev-swiss-round" class="p-2 rounded-full bg-dark-light hover:bg-primary/30 transition-all">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <span id="current-swiss-round" class="px-3 py-1 bg-primary/20 rounded-full">瑞士轮 - 第1轮</span>
+                <button id="next-swiss-round" class="p-2 rounded-full bg-dark-light hover:bg-primary/30 transition-all">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
+              </div>
+            </div>
+            <div class="flex space-x-3">
+              <button id="add-match-swiss" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded-md transition-all flex items-center">
+                <i class="fa fa-plus mr-2"></i> 添加比赛
+              </button>
+              <select id="swiss-tournament-select" class="px-3 py-2 bg-dark-light border border-gray-700 rounded-md">
+                <option value="s15">S15 全球总决赛</option>
+                <option value="s16">S16 全球总决赛</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 瑞士轮战绩表 -->
+        <div class="bg-glass rounded-lg p-4 border border-primary/30 mb-6">
+          <h3 class="text-xl font-semibold mb-4">战队战绩</h3>
+          <div class="overflow-x-auto">
+            <table class="w-full min-w-[600px]">
+              <thead>
+                <tr class="border-b border-gray-700">
+                  <th class="py-3 px-4 text-left">战队</th>
+                  <th class="py-3 px-4 text-center">赛区</th>
+                  <th class="py-3 px-4 text-center">胜场</th>
+                  <th class="py-3 px-4 text-center">负场</th>
+                  <th class="py-3 px-4 text-center">净胜分</th>
+                  <th class="py-3 px-4 text-center">状态</th>
+                </tr>
+              </thead>
+              <tbody id="swiss-standings">
+                <!-- 战绩数据将通过JavaScript动态填充 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- 瑞士轮赛程图 -->
+        <div class="bg-glass rounded-lg p-6 border border-primary/30 mb-6">
+          <h3 class="text-xl font-semibold mb-6 text-center" id="swiss-bracket-title">第1轮赛程图</h3>
+          <div class="relative overflow-x-auto pb-8">
+            <div id="swiss-bracket" class="flex justify-center min-w-[800px]">
+              <!-- 赛程图数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 瑞士轮赛程 -->
+        <div class="bg-glass rounded-lg p-4 border border-primary/30">
+          <h3 class="text-xl font-semibold mb-4">第1轮赛程</h3>
+          <div class="grid grid-cols-1 md:grid-cols-2 gap-4" id="swiss-matches">
+            <!-- 比赛数据将通过JavaScript动态填充 -->
+          </div>
+        </div>
+      </section>
+
+      <!-- 淘汰赛页面 -->
+      <section id="knockout-page" class="page-section hidden">
+        <!-- 赛程控制 -->
+        <div class="bg-glass rounded-lg p-4 mb-6 border border-primary/30">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <h3 class="text-xl font-semibold mb-4 md:mb-0">淘汰赛阶段</h3>
+            <div class="flex space-x-3">
+              <button id="add-match-knockout" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded-md transition-all flex items-center">
+                <i class="fa fa-plus mr-2"></i> 添加比赛
+              </button>
+              <select id="knockout-tournament-select" class="px-3 py-2 bg-dark-light border border-gray-700 rounded-md">
+                <option value="s15">S15 全球总决赛</option>
+                <option value="s16">S16 全球总决赛</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 淘汰赛赛程图 -->
+        <div class="bg-glass rounded-lg p-6 border border-primary/30 mb-6">
+          <h3 class="text-xl font-semibold mb-6 text-center">淘汰赛赛程图</h3>
+          <div class="relative overflow-x-auto pb-8">
+            <div id="knockout-bracket" class="flex justify-center min-w-[1200px]">
+              <!-- 赛程图数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+        </div>
+
+        <!-- 淘汰赛对阵图 -->
+        <div class="bg-glass rounded-lg p-6 border border-primary/30">
+          <h3 class="text-xl font-semibold mb-6 text-center">淘汰赛对阵详情</h3>
+          
+          <!-- 四分之一决赛 -->
+          <div class="mb-12">
+            <h4 class="text-lg font-medium mb-4 text-center">四分之一决赛</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="quarterfinals">
+              <!-- 四分之一决赛数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+          
+          <!-- 半决赛 -->
+          <div class="mb-12">
+            <h4 class="text-lg font-medium mb-4 text-center">半决赛</h4>
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="semifinals">
+              <!-- 半决赛数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+          
+          <!-- 决赛 -->
+          <div>
+            <h4 class="text-lg font-medium mb-4 text-center">决赛</h4>
+            <div class="flex justify-center" id="finals">
+              <!-- 决赛数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 队伍管理页面 -->
+      <section id="teams-page" class="page-section hidden">
+        <!-- 队伍管理控制 -->
+        <div class="bg-glass rounded-lg p-4 mb-6 border border-primary/30">
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <h3 class="text-xl font-semibold mb-4 md:mb-0">赛区队伍管理</h3>
+            <div class="flex space-x-3">
+              <button id="add-team" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded-md transition-all flex items-center">
+                <i class="fa fa-plus mr-2"></i> 添加队伍
+              </button>
+              <select id="teams-tournament-select" class="px-3 py-2 bg-dark-light border border-gray-700 rounded-md">
+                <option value="s15">S15 全球总决赛</option>
+                <option value="s16">S16 全球总决赛</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- 赛区标签页 -->
+        <div class="mb-6">
+          <div class="flex border-b border-gray-700">
+            <button id="tab-lpl" class="region-tab px-4 py-2 text-lpl-red border-b-2 border-lpl-red font-medium">
+              LPL赛区
+            </button>
+            <button id="tab-lck" class="region-tab px-4 py-2 text-gray-400 font-medium">
+              LCK赛区
+            </button>
+            <button id="tab-lec" class="region-tab px-4 py-2 text-gray-400 font-medium">
+              LEC赛区
+            </button>
+            <button id="tab-lcs" class="region-tab px-4 py-2 text-gray-400 font-medium">
+              LCS赛区
+            </button>
+          </div>
+        </div>
+
+        <!-- 赛区队伍列表 -->
+        <div class="region-content" id="content-lpl">
+          <div class="bg-glass rounded-lg p-4 border border-lpl-red/30">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="lpl-teams">
+              <!-- LPL队伍数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+        </div>
+
+        <div class="region-content hidden" id="content-lck">
+          <div class="bg-glass rounded-lg p-4 border border-lck-blue/30">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="lck-teams">
+              <!-- LCK队伍数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+        </div>
+
+        <div class="region-content hidden" id="content-lec">
+          <div class="bg-glass rounded-lg p-4 border border-lec-green/30">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="lec-teams">
+              <!-- LEC队伍数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+        </div>
+
+        <div class="region-content hidden" id="content-lcs">
+          <div class="bg-glass rounded-lg p-4 border border-lcs-yellow/30">
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" id="lcs-teams">
+              <!-- LCS队伍数据将通过JavaScript动态填充 -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+  </main>
+
+  <!-- 页脚 -->
+  <footer class="bg-glass border-t border-primary/30 py-6 mt-12">
+    <div class="container mx-auto px-4 text-center">
+      <p class="text-gray-400">© 2025 英雄联盟全球总决赛赛程系统</p>
+      <p class="text-gray-500 text-sm mt-2">数据仅供参考，实际赛程以官方公布为准</p>
+    </div>
+  </footer>
+
+  <!-- 添加/编辑比赛模态框 -->
+  <div id="match-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/70"></div>
+    <div class="bg-dark-light rounded-lg p-6 w-full max-w-md relative z-10 border border-primary/30">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="match-modal-title" class="text-xl font-semibold">添加比赛</h3>
+        <button id="close-match-modal" class="text-gray-400 hover:text-white">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      
+      <form id="match-form">
+        <input type="hidden" id="match-id">
+        <input type="hidden" id="match-stage">
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1"> tournament</label>
+          <select id="match-tournament" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+            <option value="s15">S15 全球总决赛</option>
+            <option value="s16">S16 全球总决赛</option>
+          </select>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">日期</label>
+          <input type="date" id="match-date" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">时间</label>
+          <input type="time" id="match-time" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">队伍1</label>
+            <select id="match-team1" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+              <!-- 队伍选项将通过JavaScript动态填充 -->
+            </select>
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">队伍2</label>
+            <select id="match-team2" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+              <!-- 队伍选项将通过JavaScript动态填充 -->
+            </select>
+          </div>
+        </div>
+        
+        <div class="grid grid-cols-2 gap-4 mb-4">
+          <div>
+            <label class="block text-sm font-medium mb-1">队伍1比分</label>
+            <input type="number" id="match-score1" min="0" max="5" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+          </div>
+          <div>
+            <label class="block text-sm font-medium mb-1">队伍2比分</label>
+            <input type="number" id="match-score2" min="0" max="5" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+          </div>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">状态</label>
+          <select id="match-status" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+            <option value="upcoming">即将开始</option>
+            <option value="live">直播中</option>
+            <option value="completed">已结束</option>
+          </select>
+        </div>
+        
+        <div class="mt-6 flex justify-end">
+          <button type="button" id="cancel-match" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md mr-3">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded-md">
+            保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- 添加/编辑队伍模态框 -->
+  <div id="team-modal" class="fixed inset-0 z-50 flex items-center justify-center hidden">
+    <div class="absolute inset-0 bg-black/70"></div>
+    <div class="bg-dark-light rounded-lg p-6 w-full max-w-md relative z-10 border border-primary/30">
+      <div class="flex justify-between items-center mb-4">
+        <h3 id="team-modal-title" class="text-xl font-semibold">添加队伍</h3>
+        <button id="close-team-modal" class="text-gray-400 hover:text-white">
+          <i class="fa fa-times"></i>
+        </button>
+      </div>
+      
+      <form id="team-form">
+        <input type="hidden" id="team-id">
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1"> tournament</label>
+          <select id="team-tournament" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+            <option value="s15">S15 全球总决赛</option>
+            <option value="s16">S16 全球总决赛</option>
+          </select>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">赛区</label>
+          <select id="team-region" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md">
+            <option value="lpl">LPL赛区</option>
+            <option value="lck">LCK赛区</option>
+            <option value="lec">LEC赛区</option>
+            <option value="lcs">LCS赛区</option>
+          </select>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">队伍名称</label>
+          <input type="text" id="team-name" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md" required>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">队伍缩写</label>
+          <input type="text" id="team-abbreviation" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md" required>
+        </div>
+        
+        <div class="mb-4">
+          <label class="block text-sm font-medium mb-1">队伍排名</label>
+          <input type="number" id="team-rank" min="1" max="10" class="w-full px-3 py-2 bg-dark border border-gray-700 rounded-md" required>
+        </div>
+        
+        <div class="mt-6 flex justify-end">
+          <button type="button" id="cancel-team" class="px-4 py-2 bg-gray-700 hover:bg-gray-600 rounded-md mr-3">
+            取消
+          </button>
+          <button type="submit" class="px-4 py-2 bg-primary hover:bg-primary/80 rounded-md">
+            保存
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- JavaScript -->
+  <script>
+    // 数据存储
+    const data = {
+      tournaments: {
+        s15: {
+          name: "S15 全球总决赛",
+          currentStage: "playins",
+          playins: {
+            currentRound: 1,
+            matches: []
+          },
+          swiss: {
+            currentRound: 1,
+            matches: [],
+            standings: []
+          },
+          knockout: {
+            quarterfinals: [],
+            semifinals: [],
+            finals: []
+          },
+          teams: {
+            lpl: [
+              { id: 1, name: "Bilibili Gaming", abbreviation: "BLG", rank: 1, region: "lpl" },
+              { id: 2, name: "Anyones Legend", abbreviation: "AL", rank: 2, region: "lpl" },
+              { id: 3, name: "Top Esports", abbreviation: "TES", rank: 3, region: "lpl" },
+              { id: 4, name: "Invictus Gaming", abbreviation: "IG", rank: 4, region: "lpl" }
+            ],
+            lck: [
+              { id: 5, name: "Gen.G", abbreviation: "GEN", rank: 1, region: "lck" },
+              { id: 6, name: "Hanwha Life Esports", abbreviation: "HLE", rank: 2, region: "lck" },
+              { id: 7, name: "KT Rolster", abbreviation: "KT", rank: 3, region: "lck" },
+              { id: 8, name: "T1", abbreviation: "T1", rank: 4, region: "lck" }
+            ],
+            lec: [
+              { id: 9, name: "G2 Esports", abbreviation: "G2", rank: 1, region: "lec" },
+              { id: 10, name: "MKOI", abbreviation: "MKOI", rank: 2, region: "lec" },
+              { id: 11, name: "Fnatic", abbreviation: "FNC", rank: 3, region: "lec" }
+            ],
+            lta: [
+              { id: 12, name: "FlyQuest", abbreviation: "FLY", rank: 1, region: "lta" },
+              { id: 13, name: "VKS", abbreviation: "VKS", rank: 2, region: "lta" },
+              { id: 14, name: "100 Thieves", abbreviation: "100T", rank: 3, region: "lta" }
+            ],
+            lcp: [
+              { id: 15, name: "CFO", abbreviation: "CFO", rank: 1, region: "lcp" },
+              { id: 16, name: "TSW", abbreviation: "TSW", rank: 2, region: "lcp" },
+              { id: 17, name: "PSG", abbreviation: "PSG", rank: 3, region: "lcp" }
+            ]
+          }
+        },
+        s16: {
+          name: "S16 全球总决赛",
+          currentStage: "playins",
+          playins: {
+            currentRound: 1,
+            matches: []
+          },
+          swiss: {
+            currentRound: 1,
+            matches: [],
+            standings: []
+          },
+          knockout: {
+            quarterfinals: [],
+            semifinals: [],
+            finals: []
+          },
+          teams: {
+            lpl: [],
+            lck: [],
+            lec: [],
+            lcs: []
+          }
+        }
+      },
+      currentTournament: "s15"
+    };
+
+    // 初始化数据
+    function initializeData() {
+      // 为S15添加一些示例比赛数据
+      const s15 = data.tournaments.s15;
+      
+      // 入围赛示例数据
+      s15.playins.matches = [
+        {
+          id: 1,
+          date: "2025-10-01",
+          time: "10:00",
+          team1: 3, // TES
+          team2: 15, // FQ
+          score1: 2,
+          score2: 0,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 2,
+          date: "2025-10-01",
+          time: "13:00",
+          team1: 4, // WBG
+          team2: 16, // GG
+          score1: 2,
+          score2: 1,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 3,
+          date: "2025-10-02",
+          time: "10:00",
+          team1: 11, // MAD
+          team2: 14, // TL
+          score1: 1,
+          score2: 2,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 4,
+          date: "2025-10-02",
+          time: "13:00",
+          team1: 12, // VIT
+          team2: 13, // C9
+          score1: 0,
+          score2: 2,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 5,
+          date: "2025-10-03",
+          time: "10:00",
+          team1: 3, // TES
+          team2: 4, // WBG
+          score1: 2,
+          score2: 1,
+          status: "completed",
+          round: 2
+        },
+        {
+          id: 6,
+          date: "2025-10-03",
+          time: "13:00",
+          team1: 13, // C9
+          team2: 14, // TL
+          score1: 2,
+          score2: 0,
+          status: "completed",
+          round: 2
+        },
+        {
+          id: 7,
+          date: "2025-10-04",
+          time: "10:00",
+          team1: 4, // WBG
+          team2: 14, // TL
+          score1: 2,
+          score2: 0,
+          status: "upcoming",
+          round: 3
+        },
+        {
+          id: 8,
+          date: "2025-10-04",
+          time: "13:00",
+          team1: 3, // TES
+          team2: 13, // C9
+          score1: 0,
+          score2: 0,
+          status: "upcoming",
+          round: 3
+        }
+      ];
+      
+      // 瑞士轮示例数据
+      s15.swiss.standings = [
+        { team: 1, wins: 2, losses: 0, diff: 4 }, // JDG
+        { team: 2, wins: 2, losses: 0, diff: 3 }, // BLG
+        { team: 3, wins: 1, losses: 1, diff: 1 }, // TES
+        { team: 4, wins: 1, losses: 1, diff: 0 }, // WBG
+        { team: 5, wins: 1, losses: 1, diff: 0 }, // GEN
+        { team: 6, wins: 1, losses: 1, diff: -1 }, // T1
+        { team: 7, wins: 0, losses: 2, diff: -2 }, // KT
+        { team: 8, wins: 0, losses: 2, diff: -4 }, // DK
+        { team: 9, wins: 2, losses: 0, diff: 3 }, // G2
+        { team: 10, wins: 1, losses: 1, diff: 1 }, // FNC
+        { team: 11, wins: 1, losses: 1, diff: 0 }, // MAD
+        { team: 12, wins: 0, losses: 2, diff: -3 }, // VIT
+        { team: 13, wins: 2, losses: 0, diff: 4 }, // C9
+        { team: 14, wins: 1, losses: 1, diff: 1 }, // TL
+        { team: 15, wins: 0, losses: 2, diff: -2 }, // FQ
+        { team: 16, wins: 0, losses: 2, diff: -4 }  // GG
+      ];
+      
+      s15.swiss.matches = [
+        {
+          id: 9,
+          date: "2025-10-10",
+          time: "10:00",
+          team1: 1, // JDG
+          team2: 9, // G2
+          score1: 2,
+          score2: 1,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 10,
+          date: "2025-10-10",
+          time: "13:00",
+          team1: 2, // BLG
+          team2: 13, // C9
+          score1: 2,
+          score2: 0,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 11,
+          date: "2025-10-10",
+          time: "16:00",
+          team1: 3, // TES
+          team2: 5, // GEN
+          score1: 1,
+          score2: 2,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 12,
+          date: "2025-10-11",
+          time: "10:00",
+          team1: 4, // WBG
+          team2: 10, // FNC
+          score1: 2,
+          score2: 1,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 13,
+          date: "2025-10-11",
+          time: "13:00",
+          team1: 6, // T1
+          team2: 11, // MAD
+          score1: 1,
+          score2: 2,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 14,
+          date: "2025-10-11",
+          time: "16:00",
+          team1: 7, // KT
+          team2: 12, // VIT
+          score1: 1,
+          score2: 2,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 15,
+          date: "2025-10-12",
+          time: "10:00",
+          team1: 8, // DK
+          team2: 15, // FQ
+          score1: 0,
+          score2: 2,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 16,
+          date: "2025-10-12",
+          time: "13:00",
+          team1: 14, // TL
+          team2: 16, // GG
+          score1: 2,
+          score2: 0,
+          status: "completed",
+          round: 1
+        },
+        {
+          id: 17,
+          date: "2025-10-14",
+          time: "10:00",
+          team1: 1, // JDG
+          team2: 2, // BLG
+          score1: 2,
+          score2: 0,
+          status: "completed",
+          round: 2
+        },
+        {
+          id: 18,
+          date: "2025-10-14",
+          time: "13:00",
+          team1: 9, // G2
+          team2: 13, // C9
+          score1: 2,
+          score2: 1,
+          status: "completed",
+          round: 2
+        },
+        {
+          id: 19,
+          date: "2025-10-15",
+          time: "10:00",
+          team1: 3, // TES
+          team2: 4, // WBG
+          score1: 2,
+          score2: 1,
+          status: "completed",
+          round: 2
+        },
+        {
+          id: 20,
+          date: "2025-10-15",
+          time: "13:00",
+          team1: 5, // GEN
+          team2: 10, // FNC
+          score1: 2,
+          score2: 0,
+          status: "completed",
+          round: 2
+        },
+        {
+          id: 21,
+          date: "2025-10-16",
+          time: "10:00",
+          team1: 6, // T1
+          team2: 14, // TL
+          score1: 2,
+          score2: 1,
+          status: "upcoming",
+          round: 3
+        },
+        {
+          id: 22,
+          date: "2025-10-16",
+          time: "13:00",
+          team1: 11, // MAD
+          team2: 16, // GG
+          score1: 0,
+          score2: 0,
+          status: "upcoming",
+          round: 3
+        },
+        {
+          id: 23,
+          date: "2025-10-17",
+          time: "10:00",
+          team1: 7, // KT
+          team2: 15, // FQ
+          score1: 0,
+          score2: 0,
+          status: "upcoming",
+          round: 3
+        },
+        {
+          id: 24,
+          date: "2025-10-17",
+          time: "13:00",
+          team1: 8, // DK
+          team2: 12, // VIT
+          score1: 0,
+          score2: 0,
+          status: "upcoming",
+          round: 3
+        }
+      ];
+      
+      // 淘汰赛示例数据
+      s15.knockout.quarterfinals = [
+        {
+          id: 25,
+          date: "2025-10-25",
+          time: "10:00",
+          team1: 1, // JDG
+          team2: 10, // FNC
+          score1: 3,
+          score2: 1,
+          status: "completed"
+        },
+        {
+          id: 26,
+          date: "2025-10-25",
+          time: "14:00",
+          team1: 9, // G2
+          team2: 4, // WBG
+          score1: 3,
+          score2: 2,
+          status: "completed"
+        },
+        {
+          id: 27,
+          date: "2025-10-26",
+          time: "10:00",
+          team1: 2, // BLG
+          team2: 5, // GEN
+          score1: 3,
+          score2: 0,
+          status: "completed"
+        },
+        {
+          id: 28,
+          date: "2025-10-26",
+          time: "14:00",
+          team1: 13, // C9
+          team2: 3, // TES
+          score1: 1,
+          score2: 3,
+          status: "completed"
+        }
+      ];
+      
+      s15.knockout.semifinals = [
+        {
+          id: 29,
+          date: "2025-10-30",
+          time: "10:00",
+          team1: 1, // JDG
+          team2: 9, // G2
+          score1: 3,
+          score2: 2,
+          status: "completed"
+        },
+        {
+          id: 30,
+          date: "2025-10-31",
+          time: "10:00",
+          team1: 2, // BLG
+          team2: 3, // TES
+          score1: 3,
+          score2: 1,
+          status: "completed"
+        }
+      ];
+      
+      s15.knockout.finals = [
+        {
+          id: 31,
+          date: "2025-11-08",
+          time: "10:00",
+          team1: 1, // JDG
+          team2: 2, // BLG
+          score1: 0,
+          score2: 0,
+          status: "upcoming"
+        }
+      ];
+    }
+
+    // 比赛数据直接嵌入到JavaScript中 - 完整版本在下方
+    
+    // 存储所有比赛数据
+    let allMatchData = {};
+    let filteredMatches = {
+      playins: [],
+      swiss: [],
+      knockout: []
+    };
+    
+    // 比赛数据现在从JSON文件读取 - lol_s15_schedule.json
+    
+    // 加载比赛数据
+    async function loadMatchData() {
+      try {
+        // 从JSON文件读取数据
+        const response = await fetch('lol_s15_schedule.json');
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        allMatchData = await response.json();
+        console.log('从JSON文件加载数据成功:', allMatchData);
+        
+        // 按比赛阶段分类数据
+        categorizeMatches();
+        
+        return true;
+      } catch (error) {
+        console.error('加载数据失败:', error);
+        // 初始化空数据结构
+        filteredMatches = {
+          playins: [],
+          swiss: [],
+          knockout: []
+        };
+        return false;
+      }
+    }
+
+    // 按比赛阶段分类数据
+    function categorizeMatches() {
+      // 重置分类数据
+      filteredMatches = {
+        playins: [],
+        swiss: [],
+        knockout: []
+      };
+
+      // 遍历所有日期的数据
+      Object.values(allMatchData).forEach(dayData => {
+        // 遍历当天的所有比赛
+        if (dayData && dayData.matches) {
+          Object.values(dayData.matches).forEach(match => {
+            // 根据match_name分类
+            if (match && match.match_name) {
+              // 保持原始数据格式，并添加必要的字段供render函数使用
+              const matchData = {
+                ...match,
+                // 添加render函数需要的字段
+                team1_name: match.match_away_team,
+                team2_name: match.match_home_team,
+                team1_score: match.match_away_score,
+                team2_score: match.match_home_score,
+                match_status: match.match_status || '未开始',
+                match_start_time: match.match_start_time
+              };
+
+              // 添加比赛轮次信息
+              if (match.match_name.includes('四分之一决赛')) {
+                matchData.match_round = '1/4 决赛';
+              } else if (match.match_name.includes('半决赛')) {
+                matchData.match_round = '1/2 决赛';
+              } else if (match.match_name.includes('决赛')) {
+                matchData.match_round = '决赛';
+              }
+
+              if (match.match_name.includes('入围赛')) {
+                filteredMatches.playins.push(matchData);
+              } else if (match.match_name.includes('瑞士轮')) {
+                filteredMatches.swiss.push(matchData);
+              } else if (match.match_name.includes('淘汰赛') || 
+                        match.match_name.includes('四分之一决赛') || 
+                        match.match_name.includes('半决赛') || 
+                        match.match_name.includes('决赛')) {
+                filteredMatches.knockout.push(matchData);
+              }
+            }
+          });
+        }
+      });
+
+      // 按时间排序
+      filteredMatches.playins.sort((a, b) => new Date(a.match_start_time) - new Date(b.match_start_time));
+      filteredMatches.swiss.sort((a, b) => new Date(a.match_start_time) - new Date(b.match_start_time));
+      filteredMatches.knockout.sort((a, b) => new Date(a.match_start_time) - new Date(b.match_start_time));
+
+      // 更新到tournament对象中，这是页面实际使用的数据
+      const tournament = data.tournaments[data.currentTournament];
+      
+      // 重要：render函数直接使用knockoutMatches变量
+      window.knockoutMatches = filteredMatches.knockout;
+      window.playinsMatches = filteredMatches.playins;
+      window.swissMatches = filteredMatches.swiss;
+
+      console.log('分类后的数据:', filteredMatches);
+      console.log('knockoutMatches:', window.knockoutMatches);
+    }
+
+    // DOM 元素
+    const elements = {
+      // 导航菜单
+      navButtons: document.querySelectorAll('.nav-btn'),
+      mobileMenuBtn: document.getElementById('mobile-menu-btn'),
+      mobileMenu: document.getElementById('mobile-menu'),
+      
+      // 页面标题
+      pageTitle: document.getElementById('page-title'),
+      pageSubtitle: document.getElementById('page-subtitle'),
+      
+      // 页面内容
+      pages: {
+        playins: document.getElementById('playins-page'),
+        swiss: document.getElementById('swiss-page'),
+        knockout: document.getElementById('knockout-page'),
+        teams: document.getElementById('teams-page')
+      },
+      
+      // 入围赛页面
+      playins: {
+        prevStage: document.getElementById('prev-stage'),
+        currentStage: document.getElementById('current-stage'),
+        nextStage: document.getElementById('next-stage'),
+        addMatch: document.getElementById('add-match-playins'),
+        tournamentSelect: document.getElementById('tournament-select'),
+        matchesContainer: document.getElementById('playins-matches')
+      },
+      
+      // 瑞士轮页面
+      swiss: {
+        prevRound: document.getElementById('prev-swiss-round'),
+        currentRound: document.getElementById('current-swiss-round'),
+        nextRound: document.getElementById('next-swiss-round'),
+        addMatch: document.getElementById('add-match-swiss'),
+        tournamentSelect: document.getElementById('swiss-tournament-select'),
+        standingsContainer: document.getElementById('swiss-standings'),
+        matchesContainer: document.getElementById('swiss-matches')
+      },
+      
+      // 淘汰赛页面
+      knockout: {
+        addMatch: document.getElementById('add-match-knockout'),
+        tournamentSelect: document.getElementById('knockout-tournament-select'),
+        quarterfinals: document.getElementById('quarterfinals'),
+        semifinals: document.getElementById('semifinals'),
+        finals: document.getElementById('finals')
+      },
+      
+      // 队伍管理页面
+      teams: {
+        addTeam: document.getElementById('add-team'),
+        tournamentSelect: document.getElementById('teams-tournament-select'),
+        tabs: document.querySelectorAll('.region-tab'),
+        contents: document.querySelectorAll('.region-content'),
+        containers: {
+          lpl: document.getElementById('lpl-teams'),
+          lck: document.getElementById('lck-teams'),
+          lec: document.getElementById('lec-teams'),
+          lcs: document.getElementById('lcs-teams')
+        }
+      },
+      
+      // 比赛模态框
+      matchModal: document.getElementById('match-modal'),
+      closeMatchModal: document.getElementById('close-match-modal'),
+      matchModalTitle: document.getElementById('match-modal-title'),
+      matchForm: document.getElementById('match-form'),
+      matchId: document.getElementById('match-id'),
+      matchStage: document.getElementById('match-stage'),
+      matchTournament: document.getElementById('match-tournament'),
+      matchDate: document.getElementById('match-date'),
+      matchTime: document.getElementById('match-time'),
+      matchTeam1: document.getElementById('match-team1'),
+      matchTeam2: document.getElementById('match-team2'),
+      matchScore1: document.getElementById('match-score1'),
+      matchScore2: document.getElementById('match-score2'),
+      matchStatus: document.getElementById('match-status'),
+      cancelMatch: document.getElementById('cancel-match'),
+      
+      // 队伍模态框
+      teamModal: document.getElementById('team-modal'),
+      closeTeamModal: document.getElementById('close-team-modal'),
+      teamModalTitle: document.getElementById('team-modal-title'),
+      teamForm: document.getElementById('team-form'),
+      teamId: document.getElementById('team-id'),
+      teamTournament: document.getElementById('team-tournament'),
+      teamRegion: document.getElementById('team-region'),
+      teamName: document.getElementById('team-name'),
+      teamAbbreviation: document.getElementById('team-abbreviation'),
+      teamRank: document.getElementById('team-rank'),
+      cancelTeam: document.getElementById('cancel-team')
+    };
+
+    // 工具函数
+    const utils = {
+      // 获取当前 tournament 数据
+      getCurrentTournament() {
+        return data.tournaments[data.currentTournament];
+      },
+      
+      // 获取队伍信息
+      getTeam(tournament, teamId) {
+        const teams = tournament.teams;
+        for (const region in teams) {
+          const team = teams[region].find(t => t.id === teamId);
+          if (team) return team;
+        }
+        return null;
+      },
+      
+      // 获取队伍名称
+      getTeamName(tournament, teamId) {
+        const team = this.getTeam(tournament, teamId);
+        return team ? team.name : '未知队伍';
+      },
+      
+      // 获取队伍缩写
+      getTeamAbbreviation(tournament, teamId) {
+        const team = this.getTeam(tournament, teamId);
+        return team ? team.abbreviation : 'TBD';
+      },
+      
+      // 获取队伍所在赛区
+      getTeamRegion(tournament, teamId) {
+        const team = this.getTeam(tournament, teamId);
+        return team ? team.region : '';
+      },
+      
+      // 获取赛区颜色
+      getRegionColor(region) {
+        switch (region) {
+          case 'lpl': return 'text-lpl-red';
+          case 'lck': return 'text-lck-blue';
+          case 'lec': return 'text-lec-green';
+          case 'lcs': return 'text-lcs-yellow';
+          default: return 'text-gray-400';
+        }
+      },
+      
+      // 获取赛区边框颜色
+      getRegionBorderColor(region) {
+        switch (region) {
+          case 'lpl': return 'border-lpl-red/50';
+          case 'lck': return 'border-lck-blue/50';
+          case 'lec': return 'border-lec-green/50';
+          case 'lcs': return 'border-lcs-yellow/50';
+          default: return 'border-gray-700';
+        }
+      },
+      
+      // 获取状态标签
+      getStatusBadge(status) {
+        switch (status) {
+          case 'upcoming':
+            return '<span class="px-2 py-1 bg-blue-900/50 text-blue-400 rounded-full text-xs">即将开始</span>';
+          case 'live':
+            return '<span class="px-2 py-1 bg-red-900/50 text-red-400 rounded-full text-xs animate-pulse">直播中</span>';
+          case 'completed':
+            return '<span class="px-2 py-1 bg-green-900/50 text-green-400 rounded-full text-xs">已结束</span>';
+          default:
+            return '<span class="px-2 py-1 bg-gray-700 text-gray-400 rounded-full text-xs">未知</span>';
+        }
+      },
+      
+      // 生成唯一ID
+      generateId() {
+        return Date.now().toString(36) + Math.random().toString(36).substr(2);
+      },
+      
+      // 格式化日期
+      formatDate(dateString) {
+        const date = new Date(dateString);
+        return date.toLocaleDateString('zh-CN', { month: 'long', day: 'numeric', weekday: 'long' });
+      },
+      
+      // 填充队伍选择下拉框
+      populateTeamSelects(tournament) {
+        const team1Select = elements.matchTeam1;
+        const team2Select = elements.matchTeam2;
+        
+        // 清空现有选项
+        team1Select.innerHTML = '';
+        team2Select.innerHTML = '';
+        
+        // 添加所有队伍
+        const teams = tournament.teams;
+        for (const region in teams) {
+          const regionTeams = teams[region];
+          regionTeams.forEach(team => {
+            const option1 = document.createElement('option');
+            option1.value = team.id;
+            option1.textContent = `${team.name} (${team.abbreviation})`;
+            option1.className = this.getRegionColor(region);
+            
+            const option2 = document.createElement('option');
+            option2.value = team.id;
+            option2.textContent = `${team.name} (${team.abbreviation})`;
+            option2.className = this.getRegionColor(region);
+            
+            team1Select.appendChild(option1);
+            team2Select.appendChild(option2);
+          });
+        }
+      }
+    };
+    
+    // 创建瑞士轮比赛赛程图元素
+    function createSwissMatchBracket(tournament, match) {
+      const team1 = utils.getTeam(tournament, match.team1);
+      const team2 = utils.getTeam(tournament, match.team2);
+      
+      const matchEl = document.createElement('div');
+      matchEl.className = `bg-dark-light rounded-lg p-4 border ${utils.getRegionBorderColor(team1.region)} ${utils.getRegionBorderColor(team2.region)} w-64`;
+      
+      // 比赛信息头部
+      const header = document.createElement('div');
+      header.className = 'flex justify-between items-center mb-3';
+      header.innerHTML = `
+        <div class="text-sm text-gray-400">${utils.formatDate(match.date)}</div>
+        <div>${utils.getStatusBadge(match.status)}</div>
+      `;
+      matchEl.appendChild(header);
+      
+      // 队伍1
+      const team1El = document.createElement('div');
+      team1El.className = 'flex justify-between items-center mb-2';
+      team1El.innerHTML = `
+        <div class="flex items-center">
+          <span class="${utils.getRegionColor(team1.region)} font-bold">${team1.abbreviation}</span>
+          <span class="ml-2 text-sm">${team1.name}</span>
+        </div>
+        <span class="${match.status === 'completed' && match.score1 > match.score2 ? 'text-green-400 font-bold' : ''}">${match.score1}</span>
+      `;
+      matchEl.appendChild(team1El);
+      
+      // VS 分隔线
+      const vsLine = document.createElement('div');
+      vsLine.className = 'flex items-center justify-center my-1';
+      vsLine.innerHTML = '<span class="text-gray-500 text-xs">VS</span>';
+      matchEl.appendChild(vsLine);
+      
+      // 队伍2
+      const team2El = document.createElement('div');
+      team2El.className = 'flex justify-between items-center';
+      team2El.innerHTML = `
+        <div class="flex items-center">
+          <span class="${utils.getRegionColor(team2.region)} font-bold">${team2.abbreviation}</span>
+          <span class="ml-2 text-sm">${team2.name}</span>
+        </div>
+        <span class="${match.status === 'completed' && match.score2 > match.score1 ? 'text-green-400 font-bold' : ''}">${match.score2}</span>
+      `;
+      matchEl.appendChild(team2El);
+      
+      return matchEl;
+    }
+    
+    // 渲染淘汰赛赛程图
+    function renderKnockoutBracket(tournament) {
+      const knockout = tournament.knockout;
+      const bracketContainer = document.getElementById('knockout-bracket');
+      bracketContainer.innerHTML = '';
+      
+      // 创建赛程图容器
+      const bracket = document.createElement('div');
+      bracket.className = 'flex space-x-8';
+      
+      // 创建四分之一决赛部分
+      const quarterfinalsCol = document.createElement('div');
+      quarterfinalsCol.className = 'flex flex-col space-y-4';
+      quarterfinalsCol.innerHTML = '<h4 class="text-center font-medium mb-2">四分之一决赛</h4>';
+      
+      // 添加四分之一决赛比赛
+      for (let i = 0; i < 4; i++) {
+        const match = knockout.quarterfinals[i];
+        const matchEl = createKnockoutMatchBracket(tournament, match);
+        quarterfinalsCol.appendChild(matchEl);
+        
+        // 添加连接线
+        if (i < 3) {
+          const connector = document.createElement('div');
+          connector.className = 'h-8 w-px bg-gray-700 mx-auto';
+          quarterfinalsCol.appendChild(connector);
+        }
+      }
+      bracket.appendChild(quarterfinalsCol);
+      
+      // 添加连接线到半决赛
+      const connector1 = document.createElement('div');
+      connector1.className = 'flex flex-col justify-center items-center';
+      connector1.innerHTML = `
+        <div class="h-px w-16 bg-gray-700"></div>
+        <div class="h-24 w-px bg-gray-700"></div>
+        <div class="h-px w-16 bg-gray-700"></div>
+        <div class="h-24 w-px bg-gray-700"></div>
+        <div class="h-px w-16 bg-gray-700"></div>
+      `;
+      bracket.appendChild(connector1);
+      
+      // 创建半决赛部分
+      const semifinalsCol = document.createElement('div');
+      semifinalsCol.className = 'flex flex-col space-y-4';
+      semifinalsCol.innerHTML = '<h4 class="text-center font-medium mb-2">半决赛</h4>';
+      
+      // 添加半决赛比赛
+      for (let i = 0; i < 2; i++) {
+        const match = knockout.semifinals[i];
+        const matchEl = createKnockoutMatchBracket(tournament, match);
+        semifinalsCol.appendChild(matchEl);
+        
+        // 添加连接线
+        if (i < 1) {
+          const connector = document.createElement('div');
+          connector.className = 'h-28 w-px bg-gray-700 mx-auto';
+          semifinalsCol.appendChild(connector);
+        }
+      }
+      bracket.appendChild(semifinalsCol);
+      
+      // 添加连接线到决赛
+      const connector2 = document.createElement('div');
+      connector2.className = 'flex flex-col justify-center items-center';
+      connector2.innerHTML = `
+        <div class="h-px w-16 bg-gray-700"></div>
+        <div class="h-40 w-px bg-gray-700"></div>
+        <div class="h-px w-16 bg-gray-700"></div>
+      `;
+      bracket.appendChild(connector2);
+      
+      // 创建决赛部分
+      const finalsCol = document.createElement('div');
+      finalsCol.className = 'flex flex-col space-y-4';
+      finalsCol.innerHTML = '<h4 class="text-center font-medium mb-2">决赛</h4>';
+      
+      // 添加决赛比赛
+      const match = knockout.finals[0];
+      const matchEl = createKnockoutMatchBracket(tournament, match, true);
+      finalsCol.appendChild(matchEl);
+      
+      bracket.appendChild(finalsCol);
+      
+      bracketContainer.appendChild(bracket);
+    }
+    
+    // 创建淘汰赛比赛赛程图元素
+    function createKnockoutMatchBracket(tournament, match, isFinal = false) {
+      if (!match) {
+        const emptyMatch = document.createElement('div');
+        emptyMatch.className = `bg-dark-light rounded-lg p-3 border border-gray-700 w-56 ${isFinal ? 'w-64' : ''}`;
+        emptyMatch.innerHTML = '<div class="text-gray-500 text-center py-2">待定</div>';
+        return emptyMatch;
+      }
+      
+      const team1 = utils.getTeam(tournament, match.team1);
+      const team2 = utils.getTeam(tournament, match.team2);
+      
+      const matchEl = document.createElement('div');
+      matchEl.className = `bg-dark-light rounded-lg p-3 border ${utils.getRegionBorderColor(team1.region)} ${utils.getRegionBorderColor(team2.region)} w-56 ${isFinal ? 'w-64 border-2 animate-glow' : ''}`;
+      
+      // 队伍1
+      const team1El = document.createElement('div');
+      team1El.className = 'flex justify-between items-center mb-1';
+      team1El.innerHTML = `
+        <div class="flex items-center">
+          <span class="${utils.getRegionColor(team1.region)} font-bold text-sm">${team1.abbreviation}</span>
+        </div>
+        <span class="${match.status === 'completed' && match.score1 > match.score2 ? 'text-green-400 font-bold' : ''}">${match.score1 || 0}</span>
+      `;
+      matchEl.appendChild(team1El);
+      
+      // 队伍2
+      const team2El = document.createElement('div');
+      team2El.className = 'flex justify-between items-center';
+      team2El.innerHTML = `
+        <div class="flex items-center">
+          <span class="${utils.getRegionColor(team2.region)} font-bold text-sm">${team2.abbreviation}</span>
+        </div>
+        <span class="${match.status === 'completed' && match.score2 > match.score1 ? 'text-green-400 font-bold' : ''}">${match.score2 || 0}</span>
+      `;
+      matchEl.appendChild(team2El);
+      
+      // 决赛添加日期
+      if (isFinal) {
+        const dateEl = document.createElement('div');
+        dateEl.className = 'text-xs text-gray-400 text-center mt-2';
+        dateEl.textContent = match.date ? utils.formatDate(match.date) : '';
+        matchEl.appendChild(dateEl);
+      }
+      
+      return matchEl;
+    }
+
+    // 渲染函数
+    const render = {
+      // 渲染入围赛页面
+      playins(tournament) {
+        // 使用从JSON加载的入围赛数据
+        const matches = filteredMatches.playins;
+        
+        // 更新当前轮次显示
+        elements.playins.currentStage.textContent = `入围赛`;
+        
+        // 渲染比赛列表
+        const container = elements.playins.matchesContainer;
+        container.innerHTML = '';
+        
+        if (matches.length === 0) {
+          container.innerHTML = `
+            <tr>
+              <td colspan="6" class="py-8 text-center text-gray-500">
+                暂无入围赛数据
+                <button id="add-first-match" class="ml-2 text-primary hover:underline">添加比赛</button>
+              </td>
+            </tr>
+          `;
+          
+          // 添加事件监听
+          document.getElementById('add-first-match').addEventListener('click', () => {
+            openMatchModal('playins', null, 1);
+          });
+          
+          return;
+        }
+        
+        // 从tournament对象中获取所有队伍
+        const teamsArray = [];
+        Object.values(tournament.teams).forEach(regionTeams => {
+          regionTeams.forEach(team => {
+            teamsArray.push(team);
+          });
+        });
+        
+        matches.forEach(match => {
+          // 从JSON数据中提取队伍信息
+          const team1Name = match.team1_name || '未知队伍';
+          const team2Name = match.team2_name || '未知队伍';
+          const score1 = match.team1_score || 0;
+          const score2 = match.team2_score || 0;
+          const status = match.match_status || '未开始';
+          
+          // 从队伍数据中查找对应的队伍信息
+          let team1 = teamsArray.find(t => t.name === team1Name || t.abbreviation === team1Name) || { name: team1Name, abbreviation: team1Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          let team2 = teamsArray.find(t => t.name === team2Name || t.abbreviation === team2Name) || { name: team2Name, abbreviation: team2Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          
+          // 格式化日期
+          let date = match.match_start_time ? new Date(match.match_start_time).toISOString().split('T')[0] : new Date().toISOString().split('T')[0];
+          let time = match.match_start_time ? new Date(match.match_start_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
+          
+          const row = document.createElement('tr');
+          row.className = 'border-b border-gray-800 hover:bg-dark-light/50 transition-colors';
+          row.innerHTML = `
+            <td class="py-4 px-4">${utils.formatDate(date)}</td>
+            <td class="py-4 px-4">${time}</td>
+            <td class="py-4 px-4">
+              <div class="flex items-center justify-center space-x-4">
+                <div class="flex items-center">
+                  <span class="${utils.getRegionColor(team1.region)} font-medium">${team1.abbreviation}</span>
+                  <span class="ml-2">${team1.name}</span>
+                </div>
+                <span class="text-gray-500">VS</span>
+                <div class="flex items-center">
+                  <span class="${utils.getRegionColor(team2.region)} font-medium">${team2.abbreviation}</span>
+                  <span class="ml-2">${team2.name}</span>
+                </div>
+              </div>
+            </td>
+            <td class="py-4 px-4 text-center">
+              ${status === '已结束' 
+                ? `<span class="text-xl font-bold">${score1} - ${score2}</span>` 
+                : '<span class="text-gray-500">待定</span>'}
+            </td>
+            <td class="py-4 px-4 text-center">
+              ${utils.getStatusBadge(status === '已结束' ? 'completed' : 'pending')}
+            </td>
+            <td class="py-4 px-4 text-right">
+              <div class="flex justify-end space-x-2">
+                <button class="edit-match p-1 text-blue-400 hover:text-blue-300" data-id="${match.match_id || Math.random().toString(36).substr(2, 9)}">
+                  <i class="fa fa-pencil"></i>
+                </button>
+                <button class="delete-match p-1 text-red-400 hover:text-red-300" data-id="${match.match_id || Math.random().toString(36).substr(2, 9)}">
+                  <i class="fa fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          `;
+          
+          container.appendChild(row);
+        });
+        
+        // 添加事件监听
+        document.querySelectorAll('.edit-match').forEach(btn => {
+          btn.addEventListener('click', () => {
+            openMatchModal('playins', null, 1);
+          });
+        });
+        
+        document.querySelectorAll('.delete-match').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (confirm('确定要删除这场比赛吗？')) {
+              // 由于使用的是从JSON加载的数据，删除操作可能不会持久化
+              render.playins(tournament);
+            }
+          });
+        });
+      },
+      
+      // 渲染瑞士轮赛程图
+      swissBracket(tournament) {
+        const swissBracketContainer = document.getElementById('swiss-bracket');
+        if (!swissBracketContainer) return;
+        
+        swissBracketContainer.innerHTML = '';
+        
+        // 使用从JSON加载的瑞士轮数据
+        const allMatches = filteredMatches.swiss;
+        
+        // 使用tournament中的currentRound值
+        const currentRound = tournament.swiss.currentRound;
+        
+        // 计算需要显示的轮次范围（显示当前轮次和下一轮）
+        const displayStartRound = currentRound;
+        const displayEndRound = currentRound + 1; // 显示当前轮和下一轮
+        
+        // 添加标题
+        const bracketTitle = document.createElement('h3');
+        bracketTitle.className = 'text-xl font-bold mb-4';
+        bracketTitle.textContent = `赛程图 (第 ${displayStartRound}-${displayEndRound} 轮)`;
+        swissBracketContainer.appendChild(bracketTitle);
+        
+        // 创建轮次容器
+        const roundsContainer = document.createElement('div');
+        roundsContainer.className = 'flex space-x-8 overflow-x-auto pb-4';
+        swissBracketContainer.appendChild(roundsContainer);
+        
+        // 渲染每个轮次
+        for (let roundNum = displayStartRound; roundNum <= displayEndRound; roundNum++) {
+          // 过滤该轮次的所有比赛
+          const roundMatches = allMatches.filter(match => {
+            const matchDate = match.date || match.match_date;
+            if (!matchDate) return false;
+            
+            // 从日期中提取日份并计算轮次
+            const day = parseInt(matchDate.split('-')[2]);
+            const matchRound = Math.max(1, day - 14); // 10月15日为第1轮
+            return matchRound === roundNum;
+          });
+          
+          // 按时间排序比赛
+          roundMatches.sort((a, b) => {
+            return (a.time || a.match_time || '') > (b.time || b.match_time || '') ? 1 : -1;
+          });
+          
+          // 创建轮次列
+          const roundColumn = document.createElement('div');
+          roundColumn.className = 'flex flex-col space-y-4 min-w-[250px]';
+          
+          // 添加轮次标题
+          const roundHeader = document.createElement('div');
+          roundHeader.className = 'text-center font-bold text-lg';
+          roundHeader.textContent = `第 ${roundNum} 轮`;
+          roundColumn.appendChild(roundHeader);
+          
+          // 渲染该轮次的比赛
+          if (roundMatches.length === 0) {
+            const emptyMatch = document.createElement('div');
+            emptyMatch.className = 'bg-dark-light rounded-lg p-3 text-center text-gray-400';
+            emptyMatch.textContent = '暂无比赛';
+            roundColumn.appendChild(emptyMatch);
+          } else {
+            // 获取所有队伍数据
+            const allTeams = [];
+            Object.values(tournament.teams).forEach(regionTeams => {
+              regionTeams.forEach(team => {
+                allTeams.push(team);
+              });
+            });
+            
+            roundMatches.forEach(match => {
+              // 从JSON数据中提取队伍信息
+              const team1Name = match.team1_name || '未知队伍';
+              const team2Name = match.team2_name || '未知队伍';
+              
+              // 从队伍数据中查找对应的队伍信息
+              let team1 = allTeams.find(t => t.name === team1Name || t.abbreviation === team1Name) || { name: team1Name, abbreviation: team1Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+              let team2 = allTeams.find(t => t.name === team2Name || t.abbreviation === team2Name) || { name: team2Name, abbreviation: team2Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+              
+              // 创建比赛卡片
+              const matchCard = document.createElement('div');
+              matchCard.className = 'bg-dark-light rounded-lg p-3 border border-gray-700';
+              
+              // 格式化日期和分数
+              const score1 = match.team1_score || '-';
+              const score2 = match.team2_score || '-';
+              const status = match.match_status || '未开始';
+              const date = match.match_start_time ? new Date(match.match_start_time).toISOString().split('T')[0] : '';
+              const time = match.match_start_time ? new Date(match.match_start_time).toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'}) : '';
+              
+              let scoreHtml = '';
+              if (status === '已结束') {
+                scoreHtml = `
+                  <div class="text-lg font-bold text-center my-1">
+                    ${score1} - ${score2}
+                  </div>
+                `;
+              } else {
+                scoreHtml = `
+                  <div class="text-sm text-gray-400 text-center my-1">
+                    ${time || '待定'}
+                  </div>
+                `;
+              }
+              
+              matchCard.innerHTML = `
+                <div class="flex justify-between text-sm mb-1">
+                  <span class="${utils.getRegionColor(team1.region)}">${team1.abbreviation}</span>
+                  <span class="text-gray-400">${date ? utils.formatDate(date) : ''}</span>
+                </div>
+                <div class="flex justify-between">
+                  <span class="font-medium">${team1.name}</span>
+                  <span class="${utils.getRegionColor(team2.region)}">${team2.abbreviation}</span>
+                </div>
+                ${scoreHtml}
+                <div class="flex justify-end">
+                  <span class="font-medium">${team2.name}</span>
+                </div>
+              `;
+              
+              roundColumn.appendChild(matchCard);
+            });
+          }
+          
+          roundsContainer.appendChild(roundColumn);
+          
+          // 添加箭头连接（除了最后一轮）
+          if (roundNum < displayEndRound) {
+            const arrow = document.createElement('div');
+            arrow.className = 'flex items-center justify-center min-w-[50px] text-gray-500';
+            arrow.innerHTML = '<i class="fa fa-long-arrow-right text-xl"></i>';
+            roundsContainer.appendChild(arrow);
+          }
+        }
+      },
+      
+      // 渲染瑞士轮页面
+      swiss(tournament) {
+        // 使用从JSON加载的瑞士轮数据
+        const allMatches = filteredMatches.swiss || [];
+        const currentRound = tournament.swiss.currentRound;
+        
+        // 简单的轮次映射，使用日期字符串的后两位数字减去14得到轮次（10月15日为第1轮）
+        // 根据当前轮次过滤比赛
+        const matches = allMatches.filter(match => {
+          const matchDate = match.date || match.match_date;
+          if (!matchDate) return false;
+          
+          // 从日期中提取日份并计算轮次
+          const day = parseInt(matchDate.split('-')[2]);
+          const matchRound = Math.max(1, day - 14); // 10月15日为第1轮
+          return matchRound === currentRound;
+        });
+        
+        // 按日期和时间排序比赛
+        matches.sort((a, b) => {
+          const dateA = new Date(a.date || a.match_date || 0);
+          const dateB = new Date(b.date || b.match_date || 0);
+          if (dateA.getTime() !== dateB.getTime()) {
+            return dateA - dateB;
+          }
+          return (a.time || a.match_time || '') > (b.time || b.match_time || '') ? 1 : -1;
+        });
+        
+        // 更新当前轮次显示
+        elements.swiss.currentRound.textContent = `瑞士轮 第${currentRound}轮`;
+        document.querySelector('#swiss-page .bg-glass h3').textContent = `瑞士轮赛程 - 第${currentRound}轮`;
+        
+        // 渲染赛程图
+        render.swissBracket(tournament);
+        
+        // 渲染战绩表 (简化版，使用JSON数据中的队伍)
+        const standingsContainer = elements.swiss.standingsContainer;
+        standingsContainer.innerHTML = '';
+        
+        // 创建一个简化的战绩表，显示所有队伍
+        const allTeams = [...new Set([...matches.map(m => m.team1_name), ...matches.map(m => m.team2_name)])];
+        
+        // 从tournament对象中获取所有队伍
+        const teamsArray = [];
+        Object.values(tournament.teams).forEach(regionTeams => {
+          regionTeams.forEach(team => {
+            teamsArray.push(team);
+          });
+        });
+        
+        allTeams.forEach(teamName => {
+          // 从队伍数据中查找对应的队伍信息
+          let team = teamsArray.find(t => t.name === teamName || t.abbreviation === teamName) || { name: teamName, abbreviation: teamName.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          
+          // 简单计算胜场和负场
+          let wins = 0, losses = 0;
+          matches.forEach(match => {
+            if (match.match_status === '已结束') {
+              if (match.team1_name === teamName && match.team1_score > match.team2_score) wins++;
+              if (match.team2_name === teamName && match.team2_score > match.team1_score) wins++;
+              if (match.team1_name === teamName && match.team1_score < match.team2_score) losses++;
+              if (match.team2_name === teamName && match.team2_score < match.team1_score) losses++;
+            }
+          });
+          
+          const row = document.createElement('tr');
+          row.className = 'border-b border-gray-800 hover:bg-dark-light/50 transition-colors';
+          
+          row.innerHTML = `
+            <td class="py-3 px-4">
+              <div class="flex items-center">
+                <span class="${utils.getRegionColor(team.region)} font-medium">${team.abbreviation}</span>
+                <span class="ml-2">${team.name}</span>
+              </div>
+            </td>
+            <td class="py-3 px-4 text-center">
+              <span class="${utils.getRegionColor(team.region)} font-medium">${team.region.toUpperCase()}</span>
+            </td>
+            <td class="py-3 px-4 text-center font-medium">${wins}</td>
+            <td class="py-3 px-4 text-center">${losses}</td>
+            <td class="py-3 px-4 text-center">${wins - losses}</td>
+            <td class="py-3 px-4 text-center">
+              <span class="px-2 py-1 bg-blue-900/50 text-blue-400 rounded-full text-xs">进行中</span>
+            </td>
+          `;
+          
+          standingsContainer.appendChild(row);
+        });
+        
+        // 渲染比赛列表
+        const matchesContainer = elements.swiss.matchesContainer;
+        matchesContainer.innerHTML = '';
+        
+        if (matches.length === 0) {
+          matchesContainer.innerHTML = `
+            <div class="col-span-2 py-8 text-center text-gray-500">
+              暂无瑞士轮数据
+              <button id="add-first-swiss-match" class="ml-2 text-primary hover:underline">添加比赛</button>
+            </div>
+          `;
+          
+          // 添加事件监听
+          document.getElementById('add-first-swiss-match').addEventListener('click', () => {
+            openMatchModal('swiss', null, 1);
+          });
+          
+          return;
+        }
+        
+        // 按日期分组比赛
+        const matchesByDate = {};
+        matches.forEach(match => {
+          const date = match.match_start_time ? new Date(match.match_start_time).toISOString().split('T')[0] : '未安排';
+          if (!matchesByDate[date]) {
+            matchesByDate[date] = [];
+          }
+          matchesByDate[date].push(match);
+        });
+        
+        // 获取所有日期并排序
+        const sortedDates = Object.keys(matchesByDate).sort();
+        
+        // 为每个日期创建分组
+        sortedDates.forEach((date, dateIndex) => {
+          const dayMatches = matchesByDate[date];
+          
+          // 创建轮次标题
+          const roundTitle = document.createElement('div');
+          roundTitle.className = 'text-xl font-bold mb-4 text-primary';
+          roundTitle.textContent = `第${dateIndex + 1}轮 - ${date !== '未安排' ? utils.formatDate(date) : '未安排日期'}`;
+          matchesContainer.appendChild(roundTitle);
+          
+          // 创建这一轮的比赛网格
+          const roundGrid = document.createElement('div');
+          roundGrid.className = 'grid grid-cols-1 md:grid-cols-2 gap-4 mb-8';
+          
+          dayMatches.forEach(match => {
+            // 从JSON数据中提取队伍信息
+            const team1Name = match.team1_name || '未知队伍';
+            const team2Name = match.team2_name || '未知队伍';
+            const score1 = match.team1_score || 0;
+            const score2 = match.team2_score || 0;
+            const status = match.match_status || '未开始';
+            
+            // 从队伍数据中查找对应的队伍信息（使用已定义的teamsArray）
+            let team1 = teamsArray.find(t => t.name === team1Name || t.abbreviation === team1Name) || { name: team1Name, abbreviation: team1Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+            let team2 = teamsArray.find(t => t.name === team2Name || t.abbreviation === team2Name) || { name: team2Name, abbreviation: team2Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+            
+            // 格式化日期
+            let time = match.match_start_time ? new Date(match.match_start_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
+            
+            const card = document.createElement('div');
+            card.className = `bg-dark-light rounded-lg p-4 border ${utils.getRegionBorderColor(team1.region)} ${utils.getRegionBorderColor(team2.region)}`;
+            
+            let scoreHtml = '';
+            if (status === '已结束') {
+              scoreHtml = `
+                <div class="text-3xl font-bold">
+                  ${score1} - ${score2}
+                </div>
+              `;
+            } else {
+              scoreHtml = `
+                <div class="text-lg text-gray-400">
+                  ${time || '待定'}
+                </div>
+              `;
+            }
+            
+            card.innerHTML = `
+              <div class="flex justify-between items-center mb-3">
+                <div class="text-sm text-gray-400">${time ? time : '待定时间'}</div>
+                <div>${utils.getStatusBadge(status === '已结束' ? 'completed' : 'pending')}</div>
+              </div>
+              <div class="flex justify-between items-center">
+                <div class="flex items-center">
+                  <span class="${utils.getRegionColor(team1.region)} text-xl font-bold">${team1.abbreviation}</span>
+                  <span class="ml-2">${team1.name}</span>
+                </div>
+                <div class="flex flex-col items-center">
+                  ${scoreHtml}
+                </div>
+                <div class="flex items-center">
+                  <span class="${utils.getRegionColor(team2.region)} text-xl font-bold">${team2.abbreviation}</span>
+                  <span class="ml-2">${team2.name}</span>
+                </div>
+              </div>
+              <div class="flex justify-end mt-3 space-x-2">
+                <button class="edit-swiss-match p-1 text-blue-400 hover:text-blue-300" data-id="${match.match_id || Math.random().toString(36).substr(2, 9)}">
+                  <i class="fa fa-pencil"></i> 编辑
+                </button>
+                <button class="delete-swiss-match p-1 text-red-400 hover:text-red-300" data-id="${match.match_id || Math.random().toString(36).substr(2, 9)}">
+                  <i class="fa fa-trash"></i> 删除
+                </button>
+              </div>
+            `;
+            
+            roundGrid.appendChild(card);
+          });
+          
+          matchesContainer.appendChild(roundGrid);
+        });
+        
+        // 添加事件监听
+        document.querySelectorAll('.edit-swiss-match').forEach(btn => {
+          btn.addEventListener('click', () => {
+            openMatchModal('swiss', null, 1);
+          });
+        });
+        
+        document.querySelectorAll('.delete-swiss-match').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (confirm('确定要删除这场比赛吗？')) {
+              // 由于使用的是从JSON加载的数据，删除操作可能不会持久化
+              render.swiss(tournament);
+            }
+          });
+        });
+      },
+      
+      // 渲染淘汰赛页面
+      knockout(tournament) {
+        // 使用从JSON加载的淘汰赛数据
+        const knockoutMatches = filteredMatches.knockout;
+        
+        // 渲染赛程图
+        const knockoutBracketContainer = document.getElementById('knockout-bracket');
+        if (knockoutBracketContainer) {
+          knockoutBracketContainer.innerHTML = '';
+          
+          // 添加标题
+          const bracketTitle = document.createElement('h3');
+          bracketTitle.className = 'text-xl font-bold mb-4';
+          bracketTitle.textContent = 'S15淘汰赛赛程图';
+          knockoutBracketContainer.appendChild(bracketTitle);
+          
+          // 创建赛程图容器
+          const bracketContainer = document.createElement('div');
+          bracketContainer.className = 'flex space-x-8 overflow-x-auto pb-4';
+          knockoutBracketContainer.appendChild(bracketContainer);
+          
+          // 定义比赛阶段
+          const stages = [
+            { key: 'quarterfinals', name: '四分之一决赛', roundKeyword: '1/4' },
+            { key: 'semifinals', name: '半决赛', roundKeyword: '1/2' },
+            { key: 'finals', name: '决赛', roundKeyword: '决赛' }
+          ];
+          
+          // 从tournament对象中获取所有队伍
+          const teamsArray = [];
+          Object.values(tournament.teams).forEach(regionTeams => {
+            regionTeams.forEach(team => {
+              teamsArray.push(team);
+            });
+          });
+          
+          // 渲染每个阶段
+          stages.forEach((stage, stageIndex) => {
+            // 从JSON数据中提取该阶段的比赛
+            const stageMatches = knockoutMatches.filter(match => 
+              match.match_round && match.match_round.includes(stage.roundKeyword)
+            );
+            
+            // 创建阶段列
+            const stageColumn = document.createElement('div');
+            stageColumn.className = 'flex flex-col space-y-4 min-w-[250px]';
+            
+            // 添加阶段标题
+            const stageHeader = document.createElement('div');
+            stageHeader.className = 'text-center font-bold text-lg';
+            stageHeader.textContent = stage.name;
+            stageColumn.appendChild(stageHeader);
+            
+            // 渲染该阶段的比赛
+            if (!stageMatches || stageMatches.length === 0) {
+              const emptyMatch = document.createElement('div');
+              emptyMatch.className = 'bg-dark-light rounded-lg p-3 text-center text-gray-400';
+              emptyMatch.textContent = '暂无比赛';
+              stageColumn.appendChild(emptyMatch);
+            } else {
+              stageMatches.forEach(match => {
+                // 从JSON数据中提取队伍信息
+                const team1Name = match.team1_name || '未知队伍';
+                const team2Name = match.team2_name || '未知队伍';
+                const score1 = match.team1_score || '-';
+                const score2 = match.team2_score || '-';
+                const status = match.match_status || '未开始';
+                
+                // 从队伍数据中查找对应的队伍信息
+                let team1 = teamsArray.find(t => t.name === team1Name || t.abbreviation === team1Name) || { name: team1Name, abbreviation: team1Name.substring(0, 3).toUpperCase(), region: 'other' };
+                let team2 = teamsArray.find(t => t.name === team2Name || t.abbreviation === team2Name) || { name: team2Name, abbreviation: team2Name.substring(0, 3).toUpperCase(), region: 'other' };
+                
+                // 格式化日期
+                let date = match.match_start_time ? new Date(match.match_start_time).toISOString().split('T')[0] : '';
+                let time = match.match_start_time ? new Date(match.match_start_time).toLocaleTimeString('zh-CN', {hour: '2-digit', minute:'2-digit'}) : '';
+                
+                // 获取赛区颜色
+                function getRegionColor(region) {
+                  const colorMap = {
+                    'lpl': 'text-lpl-red',
+                    'lck': 'text-lck-blue',
+                    'lec': 'text-lec-green',
+                    'lcs': 'text-lcs-yellow',
+                    'other': 'text-white'
+                  };
+                  return colorMap[region] || 'text-white';
+                }
+                
+                // 创建比赛卡片
+                const matchCard = document.createElement('div');
+                matchCard.className = 'bg-dark-light rounded-lg p-3 border border-gray-700';
+                
+                let scoreHtml = '';
+                if (status === '已结束' || (score1 !== '-' && score2 !== '-')) {
+                  const winner1 = parseInt(score1) > parseInt(score2);
+                  scoreHtml = `
+                    <div class="text-lg font-bold text-center my-1">
+                      <span class="${winner1 ? 'text-green-400' : ''}">${score1}</span> - 
+                      <span class="${!winner1 && score1 !== '-' ? 'text-green-400' : ''}">${score2}</span>
+                    </div>
+                  `;
+                } else {
+                  scoreHtml = `
+                    <div class="text-sm text-gray-400 text-center my-1">
+                      ${time || '待定'}
+                    </div>
+                  `;
+                }
+                
+                // 格式化日期显示
+                function formatMatchDate(dateStr) {
+                  if (!dateStr) return '';
+                  const date = new Date(dateStr);
+                  return date.toLocaleDateString('zh-CN', {month: '2-digit', day: '2-digit'});
+                }
+                
+                matchCard.innerHTML = `
+                  <div class="flex justify-between text-sm mb-1">
+                    <span class="${getRegionColor(team1.region)}">${team1.abbreviation}</span>
+                    <span class="text-gray-400">${date ? formatMatchDate(date) : ''}</span>
+                  </div>
+                  <div class="flex justify-between">
+                    <span class="font-medium">${team1.name}</span>
+                    <span class="${getRegionColor(team2.region)}">${team2.abbreviation}</span>
+                  </div>
+                  ${scoreHtml}
+                  <div class="flex justify-end">
+                    <span class="font-medium">${team2.name}</span>
+                  </div>
+                `;
+                
+                stageColumn.appendChild(matchCard);
+              });
+            }
+            
+            bracketContainer.appendChild(stageColumn);
+            
+            // 添加箭头连接（除了最后一个阶段）
+            if (stageIndex < stages.length - 1) {
+              const arrow = document.createElement('div');
+              arrow.className = 'flex items-center justify-center min-w-[50px] text-gray-500';
+              arrow.innerHTML = '<i class="fa fa-long-arrow-right text-xl"></i>';
+              bracketContainer.appendChild(arrow);
+            }
+          });
+        }
+        
+        // 渲染四分之一决赛
+        const quarterfinalsContainer = elements.knockout.quarterfinals;
+        quarterfinalsContainer.innerHTML = '';
+        
+        // 从JSON数据中提取四分之一决赛
+        const quarterfinalsMatches = knockoutMatches.filter(match => 
+          match.match_round && match.match_round.includes('1/4')
+        );
+        
+        quarterfinalsMatches.forEach((match, index) => {
+          // 从JSON数据中提取队伍信息
+          const team1Name = match.team1_name || '未知队伍';
+          const team2Name = match.team2_name || '未知队伍';
+          const score1 = match.team1_score || 0;
+          const score2 = match.team2_score || 0;
+          const status = match.match_status || '未开始';
+          
+          // 从队伍数据中查找对应的队伍信息
+          let team1 = teams.find(t => t.name === team1Name) || { name: team1Name, abbreviation: team1Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          let team2 = teams.find(t => t.name === team2Name) || { name: team2Name, abbreviation: team2Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          
+          // 格式化日期
+          let date = match.match_start_time ? new Date(match.match_start_time).toISOString().split('T')[0] : '';
+          let time = match.match_start_time ? new Date(match.match_start_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
+          
+          const card = document.createElement('div');
+          card.className = `bg-dark-light rounded-lg p-4 border ${utils.getRegionBorderColor(team1.region)} ${utils.getRegionBorderColor(team2.region)}`;
+          
+          let scoreHtml = '';
+          if (status === '已结束') {
+            scoreHtml = `
+              <div class="text-3xl font-bold">
+                ${score1} - ${score2}
+              </div>
+            `;
+          } else {
+            scoreHtml = `
+              <div class="text-lg text-gray-400">
+                ${time || '待定'}
+              </div>
+            `;
+          }
+          
+          card.innerHTML = `
+            <div class="flex justify-between items-center mb-3">
+              <div class="text-sm text-gray-400">${date ? utils.formatDate(date) : ''}</div>
+              <div>${utils.getStatusBadge(status === '已结束' ? 'completed' : 'pending')}</div>
+            </div>
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <span class="${utils.getRegionColor(team1.region)} text-xl font-bold">${team1.abbreviation}</span>
+                <span class="ml-2">${team1.name}</span>
+              </div>
+              <div class="flex flex-col items-center">
+                ${scoreHtml}
+              </div>
+              <div class="flex items-center">
+                <span class="${utils.getRegionColor(team2.region)} text-xl font-bold">${team2.abbreviation}</span>
+                <span class="ml-2">${team2.name}</span>
+              </div>
+            </div>
+            <div class="flex justify-end mt-3 space-x-2">
+              <button class="edit-knockout-match p-1 text-blue-400 hover:text-blue-300" data-stage="quarterfinals" data-index="${index}">
+                <i class="fa fa-pencil"></i> 编辑
+              </button>
+              <button class="delete-knockout-match p-1 text-red-400 hover:text-red-300" data-stage="quarterfinals" data-index="${index}">
+                <i class="fa fa-trash"></i> 删除
+              </button>
+            </div>
+          `;
+          
+          quarterfinalsContainer.appendChild(card);
+        });
+        
+        // 如果没有四分之一决赛数据，显示添加按钮
+        if (quarterfinalsMatches.length === 0) {
+          quarterfinalsContainer.innerHTML = `
+            <div class="col-span-2 py-8 text-center text-gray-500">
+              暂无四分之一决赛数据
+              <button id="add-first-quarterfinal" class="ml-2 text-primary hover:underline">添加比赛</button>
+            </div>
+          `;
+          
+          document.getElementById('add-first-quarterfinal').addEventListener('click', () => {
+            openMatchModal('knockout', null, 'quarterfinals');
+          });
+        }
+        
+        // 渲染半决赛
+        const semifinalsContainer = elements.knockout.semifinals;
+        semifinalsContainer.innerHTML = '';
+        
+        // 从JSON数据中提取半决赛
+        const semifinalsMatches = knockoutMatches.filter(match => 
+          match.match_round && match.match_round.includes('1/2')
+        );
+        
+        semifinalsMatches.forEach((match, index) => {
+          // 从JSON数据中提取队伍信息
+          const team1Name = match.team1_name || '未知队伍';
+          const team2Name = match.team2_name || '未知队伍';
+          const score1 = match.team1_score || 0;
+          const score2 = match.team2_score || 0;
+          const status = match.match_status || '未开始';
+          
+          // 从队伍数据中查找对应的队伍信息
+          let team1 = teams.find(t => t.name === team1Name) || { name: team1Name, abbreviation: team1Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          let team2 = teams.find(t => t.name === team2Name) || { name: team2Name, abbreviation: team2Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          
+          // 格式化日期
+          let date = match.match_start_time ? new Date(match.match_start_time).toISOString().split('T')[0] : '';
+          let time = match.match_start_time ? new Date(match.match_start_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
+          
+          const card = document.createElement('div');
+          card.className = `bg-dark-light rounded-lg p-4 border ${utils.getRegionBorderColor(team1.region)} ${utils.getRegionBorderColor(team2.region)}`;
+          
+          let scoreHtml = '';
+          if (status === '已结束') {
+            scoreHtml = `
+              <div class="text-3xl font-bold">
+                ${score1} - ${score2}
+              </div>
+            `;
+          } else {
+            scoreHtml = `
+              <div class="text-lg text-gray-400">
+                ${time || '待定'}
+              </div>
+            `;
+          }
+          
+          card.innerHTML = `
+            <div class="flex justify-between items-center mb-3">
+              <div class="text-sm text-gray-400">${date ? utils.formatDate(date) : ''}</div>
+              <div>${utils.getStatusBadge(status === '已结束' ? 'completed' : 'pending')}</div>
+            </div>
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <span class="${utils.getRegionColor(team1.region)} text-xl font-bold">${team1.abbreviation}</span>
+                <span class="ml-2">${team1.name}</span>
+              </div>
+              <div class="flex flex-col items-center">
+                ${scoreHtml}
+              </div>
+              <div class="flex items-center">
+                <span class="${utils.getRegionColor(team2.region)} text-xl font-bold">${team2.abbreviation}</span>
+                <span class="ml-2">${team2.name}</span>
+              </div>
+            </div>
+            <div class="flex justify-end mt-3 space-x-2">
+              <button class="edit-knockout-match p-1 text-blue-400 hover:text-blue-300" data-stage="semifinals" data-index="${index}">
+                <i class="fa fa-pencil"></i> 编辑
+              </button>
+              <button class="delete-knockout-match p-1 text-red-400 hover:text-red-300" data-stage="semifinals" data-index="${index}">
+                <i class="fa fa-trash"></i> 删除
+              </button>
+            </div>
+          `;
+          
+          semifinalsContainer.appendChild(card);
+        });
+        
+        // 如果没有半决赛数据，显示添加按钮
+        if (semifinalsMatches.length === 0) {
+          semifinalsContainer.innerHTML = `
+            <div class="col-span-2 py-8 text-center text-gray-500">
+              暂无半决赛数据
+              <button id="add-first-semifinal" class="ml-2 text-primary hover:underline">添加比赛</button>
+            </div>
+          `;
+          
+          document.getElementById('add-first-semifinal').addEventListener('click', () => {
+            openMatchModal('knockout', null, 'semifinals');
+          });
+        }
+        
+        // 渲染决赛
+        const finalsContainer = elements.knockout.finals;
+        finalsContainer.innerHTML = '';
+        
+        // 从JSON数据中提取决赛
+        const finalsMatches = knockoutMatches.filter(match => 
+          match.match_round && match.match_round.includes('决赛')
+        );
+        
+        finalsMatches.forEach((match, index) => {
+          // 从JSON数据中提取队伍信息
+          const team1Name = match.team1_name || '未知队伍';
+          const team2Name = match.team2_name || '未知队伍';
+          const score1 = match.team1_score || 0;
+          const score2 = match.team2_score || 0;
+          const status = match.match_status || '未开始';
+          
+          // 从队伍数据中查找对应的队伍信息
+          let team1 = teams.find(t => t.name === team1Name) || { name: team1Name, abbreviation: team1Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          let team2 = teams.find(t => t.name === team2Name) || { name: team2Name, abbreviation: team2Name.substring(0, 3).toUpperCase(), region: '未知赛区' };
+          
+          // 格式化日期
+          let date = match.match_start_time ? new Date(match.match_start_time).toISOString().split('T')[0] : '';
+          let time = match.match_start_time ? new Date(match.match_start_time).toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' }) : '';
+          
+          const card = document.createElement('div');
+          card.className = `bg-dark-light rounded-lg p-6 border-2 ${utils.getRegionBorderColor(team1.region)} ${utils.getRegionBorderColor(team2.region)} animate-glow`;
+          
+          let scoreHtml = '';
+          if (status === '已结束') {
+            scoreHtml = `
+              <div class="text-4xl font-bold">
+                ${score1} - ${score2}
+              </div>
+            `;
+          } else {
+            scoreHtml = `
+              <div class="text-xl text-gray-400">
+                ${time || '待定'}
+              </div>
+            `;
+          }
+          
+          card.innerHTML = `
+            <div class="flex justify-between items-center mb-4">
+              <div class="text-sm text-gray-400">${date ? utils.formatDate(date) : ''}</div>
+              <div>${utils.getStatusBadge(status === '已结束' ? 'completed' : 'pending')}</div>
+            </div>
+            <div class="flex justify-between items-center">
+              <div class="flex items-center">
+                <span class="${utils.getRegionColor(team1.region)} text-2xl font-bold">${team1.abbreviation}</span>
+                <span class="ml-3">${team1.name}</span>
+              </div>
+              <div class="flex flex-col items-center">
+                <div class="text-lg font-medium mb-2">决赛</div>
+                ${scoreHtml}
+              </div>
+              <div class="flex items-center">
+                <span class="${utils.getRegionColor(team2.region)} text-2xl font-bold">${team2.abbreviation}</span>
+                <span class="ml-3">${team2.name}</span>
+              </div>
+            </div>
+            <div class="flex justify-end mt-4 space-x-2">
+              <button class="edit-knockout-match p-1 text-blue-400 hover:text-blue-300" data-stage="finals" data-index="${index}">
+                <i class="fa fa-pencil"></i> 编辑
+              </button>
+              <button class="delete-knockout-match p-1 text-red-400 hover:text-red-300" data-stage="finals" data-index="${index}">
+                <i class="fa fa-trash"></i> 删除
+              </button>
+            </div>
+          `;
+          
+          finalsContainer.appendChild(card);
+        });
+        
+        // 如果没有决赛数据，显示添加按钮
+        if (finalsMatches.length === 0) {
+          finalsContainer.innerHTML = `
+            <div class="py-8 text-center text-gray-500">
+              暂无决赛数据
+              <button id="add-first-final" class="ml-2 text-primary hover:underline">添加比赛</button>
+            </div>
+          `;
+          
+          document.getElementById('add-first-final').addEventListener('click', () => {
+            openMatchModal('knockout', null, 'finals');
+          });
+        }
+        
+        // 添加事件监听
+        document.querySelectorAll('.edit-knockout-match').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const stage = btn.dataset.stage;
+            // 由于使用的是从JSON加载的数据，编辑功能仅打开模态框
+            openMatchModal('knockout', null, stage, 0);
+          });
+        });
+        
+        document.querySelectorAll('.delete-knockout-match').forEach(btn => {
+          btn.addEventListener('click', () => {
+            if (confirm('确定要删除这场比赛吗？')) {
+              // 由于使用的是从JSON加载的数据，删除操作可能不会持久化
+              render.knockout(tournament);
+            }
+          });
+        });
+      },
+      
+      // 渲染队伍管理页面
+      teams(tournament) {
+        const teams = tournament.teams;
+        
+        // 渲染各个赛区的队伍
+        for (const region in teams) {
+          const container = elements.teams.containers[region];
+          container.innerHTML = '';
+          
+          const regionTeams = teams[region];
+          
+          if (regionTeams.length === 0) {
+            container.innerHTML = `
+              <div class="col-span-full py-8 text-center text-gray-500">
+                暂无队伍数据
+                <button class="add-first-team ml-2 text-primary hover:underline" data-region="${region}">添加队伍</button>
+              </div>
+            `;
+            
+            continue;
+          }
+          
+          regionTeams.forEach(team => {
+            const card = document.createElement('div');
+            card.className = `bg-dark-light rounded-lg p-4 border ${utils.getRegionBorderColor(team.region)}`;
+            
+            card.innerHTML = `
+              <div class="flex justify-between items-start">
+                <div>
+                  <div class="flex items-center">
+                    <span class="${utils.getRegionColor(team.region)} text-xl font-bold">${team.abbreviation}</span>
+                    <span class="ml-2 text-lg">${team.name}</span>
+                  </div>
+                  <div class="mt-2 text-sm text-gray-400">
+                    <span>赛区: ${team.region.toUpperCase()}</span>
+                    <span class="ml-4">排名: ${team.rank}</span>
+                  </div>
+                </div>
+                <div class="flex flex-col space-y-2">
+                  <button class="edit-team p-1 text-blue-400 hover:text-blue-300" data-region="${region}" data-id="${team.id}">
+                    <i class="fa fa-pencil"></i> 编辑
+                  </button>
+                  <button class="delete-team p-1 text-red-400 hover:text-red-300" data-region="${region}" data-id="${team.id}">
+                    <i class="fa fa-trash"></i> 删除
+                  </button>
+                </div>
+              </div>
+            `;
+            
+            container.appendChild(card);
+          });
+        }
+        
+        // 添加事件监听
+        document.querySelectorAll('.add-first-team').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const region = btn.dataset.region;
+            openTeamModal(null, region);
+          });
+        });
+        
+        document.querySelectorAll('.edit-team').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const region = btn.dataset.region;
+            const teamId = parseInt(btn.dataset.id);
+            const team = tournament.teams[region].find(t => t.id === teamId);
+            if (team) {
+              openTeamModal(team);
+            }
+          });
+        });
+        
+        document.querySelectorAll('.delete-team').forEach(btn => {
+          btn.addEventListener('click', () => {
+            const region = btn.dataset.region;
+            const teamId = parseInt(btn.dataset.id);
+            if (confirm('确定要删除这个队伍吗？')) {
+              tournament.teams[region] = tournament.teams[region].filter(t => t.id !== teamId);
+              render.teams(tournament);
+            }
+          });
+        });
+      }
+    };
+
+    // 事件处理函数
+    function handleNavClick(pageId) {
+      // 更新页面标题和副标题
+      const tournament = utils.getCurrentTournament();
+      
+      switch (pageId) {
+        case 'playins':
+          elements.pageTitle.textContent = `${tournament.name}`;
+          elements.pageSubtitle.textContent = '入围赛赛程';
+          break;
+        case 'swiss':
+          elements.pageTitle.textContent = `${tournament.name}`;
+          elements.pageSubtitle.textContent = '瑞士轮赛程';
+          break;
+        case 'knockout':
+          elements.pageTitle.textContent = `${tournament.name}`;
+          elements.pageSubtitle.textContent = '淘汰赛赛程';
+          break;
+        case 'teams':
+          elements.pageTitle.textContent = `${tournament.name}`;
+          elements.pageSubtitle.textContent = '赛区队伍管理';
+          break;
+      }
+      
+      // 显示对应页面
+      Object.keys(elements.pages).forEach(key => {
+        elements.pages[key].classList.add('hidden');
+      });
+      elements.pages[pageId].classList.remove('hidden');
+      
+      // 更新导航按钮样式
+      elements.navButtons.forEach(btn => {
+        btn.classList.remove('bg-primary');
+        btn.classList.add('hover:bg-primary/50');
+      });
+      
+      document.getElementById(`nav-${pageId}`).classList.add('bg-primary');
+      document.getElementById(`nav-${pageId}`).classList.remove('hover:bg-primary/50');
+      
+      if (document.getElementById(`mobile-nav-${pageId}`)) {
+        document.getElementById(`mobile-nav-${pageId}`).classList.add('bg-primary');
+        document.getElementById(`mobile-nav-${pageId}`).classList.remove('hover:bg-primary/50');
+      }
+      
+      // 隐藏移动端菜单
+      elements.mobileMenu.classList.add('hidden');
+      
+      // 渲染对应页面内容
+      switch (pageId) {
+        case 'playins':
+          render.playins(tournament);
+          break;
+        case 'swiss':
+          render.swiss(tournament);
+          break;
+        case 'knockout':
+          render.knockout(tournament);
+          break;
+        case 'teams':
+          render.teams(tournament);
+          break;
+      }
+    }
+
+    // 打开比赛模态框
+    function openMatchModal(stage, match = null, roundOrStage = null, index = null) {
+      const tournament = utils.getCurrentTournament();
+      
+      // 填充队伍选择下拉框
+      utils.populateTeamSelects(tournament);
+      
+      // 设置模态框标题
+      if (match) {
+        elements.matchModalTitle.textContent = '编辑比赛';
+      } else {
+        elements.matchModalTitle.textContent = '添加比赛';
+      }
+      
+      // 设置表单数据
+      elements.matchId.value = match ? match.id : '';
+      elements.matchStage.value = stage;
+      elements.matchTournament.value = data.currentTournament;
+      
+      // 设置日期为今天或比赛日期
+      const today = new Date().toISOString().split('T')[0];
+      elements.matchDate.value = match ? match.date : today;
+      
+      // 设置时间为当前时间或比赛时间
+      const now = new Date();
+      const hours = now.getHours().toString().padStart(2, '0');
+      const minutes = now.getMinutes().toString().padStart(2, '0');
+      elements.matchTime.value = match ? match.time : `${hours}:${minutes}`;
+      
+      // 设置队伍
+      if (match) {
+        elements.matchTeam1.value = match.team1;
+        elements.matchTeam2.value = match.team2;
+        elements.matchScore1.value = match.score1;
+        elements.matchScore2.value = match.score2;
+        elements.matchStatus.value = match.status;
+      } else {
+        // 默认选择第一个和第二个队伍
+        const teamOptions = elements.matchTeam1.options;
+        if (teamOptions.length > 1) {
+          elements.matchTeam1.value = teamOptions[0].value;
+          elements.matchTeam2.value = teamOptions[1].value;
+        }
+        elements.matchScore1.value = 0;
+        elements.matchScore2.value = 0;
+        elements.matchStatus.value = 'upcoming';
+      }
+      
+      // 存储额外信息
+      elements.matchForm.dataset.roundOrStage = roundOrStage;
+      elements.matchForm.dataset.index = index;
+      
+      // 显示模态框
+      elements.matchModal.classList.remove('hidden');
+    }
+
+    // 关闭比赛模态框
+    function closeMatchModal() {
+      elements.matchModal.classList.add('hidden');
+    }
+
+    // 打开队伍模态框
+    function openTeamModal(team = null, defaultRegion = null) {
+      const tournament = utils.getCurrentTournament();
+      
+      // 设置模态框标题
+      if (team) {
+        elements.teamModalTitle.textContent = '编辑队伍';
+      } else {
+        elements.teamModalTitle.textContent = '添加队伍';
+      }
+      
+      // 设置表单数据
+      elements.teamId.value = team ? team.id : '';
+      elements.teamTournament.value = data.currentTournament;
+      
+      if (team) {
+        elements.teamRegion.value = team.region;
+        elements.teamName.value = team.name;
+        elements.teamAbbreviation.value = team.abbreviation;
+        elements.teamRank.value = team.rank;
+      } else {
+        elements.teamRegion.value = defaultRegion || 'lpl';
+        elements.teamName.value = '';
+        elements.teamAbbreviation.value = '';
+        elements.teamRank.value = 1;
+      }
+      
+      // 显示模态框
+      elements.teamModal.classList.remove('hidden');
+    }
+
+    // 关闭队伍模态框
+    function closeTeamModal() {
+      elements.teamModal.classList.add('hidden');
+    }
+
+    // 初始化事件监听
+    function initEventListeners() {
+      // 导航菜单点击事件
+      elements.navButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          const pageId = btn.id.replace('nav-', '').replace('mobile-nav-', '');
+          handleNavClick(pageId);
+        });
+      });
+      
+      // 移动端菜单按钮点击事件
+      elements.mobileMenuBtn.addEventListener('click', () => {
+        elements.mobileMenu.classList.toggle('hidden');
+      });
+      
+      // 入围赛页面事件
+      elements.playins.prevStage.addEventListener('click', () => {
+        const tournament = utils.getCurrentTournament();
+        if (tournament.playins.currentRound > 1) {
+          tournament.playins.currentRound--;
+          render.playins(tournament);
+        }
+      });
+      
+      elements.playins.nextStage.addEventListener('click', () => {
+        const tournament = utils.getCurrentTournament();
+        tournament.playins.currentRound++;
+        render.playins(tournament);
+      });
+      
+      elements.playins.addMatch.addEventListener('click', () => {
+        const tournament = utils.getCurrentTournament();
+        openMatchModal('playins', null, tournament.playins.currentRound);
+      });
+      
+      elements.playins.tournamentSelect.addEventListener('change', (e) => {
+        data.currentTournament = e.target.value;
+        handleNavClick('playins');
+      });
+      
+      // 瑞士轮页面事件
+      elements.swiss.prevRound.addEventListener('click', () => {
+        const tournament = utils.getCurrentTournament();
+        if (tournament.swiss.currentRound > 1) {
+          tournament.swiss.currentRound--;
+          render.swiss(tournament);
+        }
+      });
+      
+      elements.swiss.nextRound.addEventListener('click', () => {
+        const tournament = utils.getCurrentTournament();
+        tournament.swiss.currentRound++;
+        render.swiss(tournament);
+      });
+      
+      elements.swiss.addMatch.addEventListener('click', () => {
+        const tournament = utils.getCurrentTournament();
+        openMatchModal('swiss', null, tournament.swiss.currentRound);
+      });
+      
+      elements.swiss.tournamentSelect.addEventListener('change', (e) => {
+        data.currentTournament = e.target.value;
+        handleNavClick('swiss');
+      });
+      
+      // 淘汰赛页面事件
+      elements.knockout.addMatch.addEventListener('click', () => {
+        openMatchModal('knockout', null, 'quarterfinals');
+      });
+      
+      elements.knockout.tournamentSelect.addEventListener('change', (e) => {
+        data.currentTournament = e.target.value;
+        handleNavClick('knockout');
+      });
+      
+      // 队伍管理页面事件
+      elements.teams.addTeam.addEventListener('click', () => {
+        openTeamModal();
+      });
+      
+      elements.teams.tournamentSelect.addEventListener('change', (e) => {
+        data.currentTournament = e.target.value;
+        handleNavClick('teams');
+      });
+      
+      // 赛区标签页切换
+      elements.teams.tabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+          const region = tab.id.replace('tab-', '');
+          
+          // 更新标签页样式
+          elements.teams.tabs.forEach(t => {
+            t.classList.remove('border-b-2', 'text-lpl-red', 'text-lck-blue', 'text-lec-green', 'text-lcs-yellow');
+            t.classList.add('text-gray-400');
+          });
+          
+          tab.classList.add('border-b-2', utils.getRegionColor(region));
+          tab.classList.remove('text-gray-400');
+          
+          // 显示对应内容
+          elements.teams.contents.forEach(content => {
+            content.classList.add('hidden');
+          });
+          document.getElementById(`content-${region}`).classList.remove('hidden');
+        });
+      });
+      
+      // 比赛模态框事件
+      elements.closeMatchModal.addEventListener('click', closeMatchModal);
+      elements.cancelMatch.addEventListener('click', closeMatchModal);
+      
+      elements.matchForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const tournament = utils.getCurrentTournament();
+        const stage = elements.matchStage.value;
+        const roundOrStage = elements.matchForm.dataset.roundOrStage;
+        const index = elements.matchForm.dataset.index;
+        
+        // 获取表单数据
+        const matchData = {
+          id: elements.matchId.value ? parseInt(elements.matchId.value) : parseInt(utils.generateId()),
+          date: elements.matchDate.value,
+          time: elements.matchTime.value,
+          team1: parseInt(elements.matchTeam1.value),
+          team2: parseInt(elements.matchTeam2.value),
+          score1: parseInt(elements.matchScore1.value),
+          score2: parseInt(elements.matchScore2.value),
+          status: elements.matchStatus.value
+        };
+        
+        // 根据阶段添加或更新比赛
+        if (stage === 'playins' || stage === 'swiss') {
+          matchData.round = parseInt(roundOrStage);
+          
+          const matches = tournament[stage].matches;
+          const existingIndex = matches.findIndex(m => m.id === matchData.id);
+          
+          if (existingIndex !== -1) {
+            matches[existingIndex] = matchData;
+          } else {
+            matches.push(matchData);
+          }
+          
+          // 如果比赛已完成，更新战绩
+          if (matchData.status === 'completed' && stage === 'swiss') {
+            const standings = tournament.swiss.standings;
+            
+            // 更新队伍1战绩
+            let team1Standing = standings.find(s => s.team === matchData.team1);
+            if (!team1Standing) {
+              team1Standing = { team: matchData.team1, wins: 0, losses: 0, diff: 0 };
+              standings.push(team1Standing);
+            }
+            
+            // 更新队伍2战绩
+            let team2Standing = standings.find(s => s.team === matchData.team2);
+            if (!team2Standing) {
+              team2Standing = { team: matchData.team2, wins: 0, losses: 0, diff: 0 };
+              standings.push(team2Standing);
+            }
+            
+            // 更新胜场和负场
+            if (matchData.score1 > matchData.score2) {
+              team1Standing.wins++;
+              team2Standing.losses++;
+            } else if (matchData.score2 > matchData.score1) {
+              team2Standing.wins++;
+              team1Standing.losses++;
+            }
+            
+            // 更新净胜分
+            team1Standing.diff += (matchData.score1 - matchData.score2);
+            team2Standing.diff += (matchData.score2 - matchData.score1);
+          }
+        } else if (stage === 'knockout') {
+          const matches = tournament.knockout[roundOrStage];
+          
+          if (index !== null) {
+            matches[parseInt(index)] = matchData;
+          } else {
+            matches.push(matchData);
+          }
+        }
+        
+        // 关闭模态框并重新渲染页面
+        closeMatchModal();
+        handleNavClick(stage);
+      });
+      
+      // 队伍模态框事件
+      elements.closeTeamModal.addEventListener('click', closeTeamModal);
+      elements.cancelTeam.addEventListener('click', closeTeamModal);
+      
+      elements.teamForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+        
+        const tournament = utils.getCurrentTournament();
+        
+        // 获取表单数据
+        const teamData = {
+          id: elements.teamId.value ? parseInt(elements.teamId.value) : parseInt(utils.generateId()),
+          name: elements.teamName.value,
+          abbreviation: elements.teamAbbreviation.value,
+          rank: parseInt(elements.teamRank.value),
+          region: elements.teamRegion.value
+        };
+        
+        // 添加或更新队伍
+        const teams = tournament.teams[teamData.region];
+        const existingIndex = teams.findIndex(t => t.id === teamData.id);
+        
+        if (existingIndex !== -1) {
+          teams[existingIndex] = teamData;
+        } else {
+          teams.push(teamData);
+        }
+        
+        // 关闭模态框并重新渲染页面
+        closeTeamModal();
+        render.teams(tournament);
+      });
+    }
+
+    // 初始化应用
+    async function init() {
+      initializeData();
+      
+      // 加载CSV数据
+      await loadMatchData();
+      
+      initEventListeners();
+      // 默认显示淘汰赛页面，展示S15比赛结果
+      handleNavClick('knockout');
+    }
+
+    // 启动应用
+    init();
+  </script>
+</body>
+</html>
